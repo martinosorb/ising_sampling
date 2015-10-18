@@ -1,3 +1,5 @@
+import pyximport
+pyximport.install()
 from ising_sampling import IsingModel
 import numpy as np
 

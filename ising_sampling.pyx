@@ -1,4 +1,5 @@
 import numpy as np
+import cython
 
 class IsingModel():
     """A class to sample from arbitrary Ising models.
