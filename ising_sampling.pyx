@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class IsingModel():
     """A class to sample from arbitrary Ising models.
     The constructor takes the local fields h and connection matrix j.
