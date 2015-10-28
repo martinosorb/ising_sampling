@@ -54,10 +54,13 @@ class TestIsingModel(unittest.TestCase):
         j = np.random.normal()
         j_matrix = [[0, j], [j, 0]]
         model = IsingModel(h, j_matrix)
-        self.assertAlmostEqual(model.hamiltonian([False, False]), 0)
-        model.h = np.array([2, 2, 2])
-        model.j = np.array([[0, 1, -2], [1, 0, -1], [-2, -1, 0]])
-        self.assertAlmostEqual(model.hamiltonian([True, False, True]), -2.)
+        self.assertAlmostEqual(model.hamiltonian(np.array([0, 0])), 0)
+        h = np.array([1, -1, -1])
+        j_matrix = np.array([[0, 1, -2], [1, 0, -1], [-2, -1, 0]])
+        s = np.array([0, 1, 1])
+        a = np.dot(h, s) + .5 * np.dot(s, np.dot(j_matrix, s))
+        model = IsingModel(h, j_matrix)
+        self.assertAlmostEqual(model.hamiltonian(s), -1.)
 
 
 if __name__ == '__main__':
