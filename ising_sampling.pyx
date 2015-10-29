@@ -20,20 +20,13 @@ cdef class IsingModel:
         # size checks
         numspin = len(nh)
         if nj.shape != (numspin, numspin):
-            raise ValueError('Inconsistent h and J sizes')
+            raise ValueError('Inconsistent h and j sizes')
         if not np.all(nj == nj.T):
-            raise UserWarning('J is not a symmetric matrix')
+            raise UserWarning('j is not a symmetric matrix')
         # record the values
         self.j = nj.copy().astype(np.float64)
         self.h = nh.copy().astype(np.float64)
         self.numspin = numspin
-
-    # def hamiltonian(self, state=None):
-    #     """The Ising hamiltonian based on the given h and j."""
-    #     if state is None:
-    #         state = self.spins
-    #     state = np.asarray(state)
-    #     return - self.h @ state - 0.5 * state @ self.j @ state
 
     @cython.boundscheck(False)
     cpdef np.float64_t hamiltonian(self, np.ndarray[np.int64_t, ndim=1] state):
@@ -59,7 +52,6 @@ cdef class IsingModel:
         results = np.empty([n, self.numspin], dtype=bool)
         # initial state
         spins = np.random.choice([1, 0], size=self.numspin)
-        results[0] = spins.astype(bool)
         # iterative loop
         for itern in range(n):
             for spin in range(self.numspin):
@@ -71,6 +63,4 @@ cdef class IsingModel:
                 p /= 1 + p
                 if np.random.random() < p:
                     spins[spin] = 1
-            results[itern] = spins.astype(bool)
-
-        return results
+            yield spins.astype(bool)
