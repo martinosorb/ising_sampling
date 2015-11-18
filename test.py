@@ -8,6 +8,7 @@ import numpy as np
 # which gives me N samples of an Ising model
 # at local fields h and interactions J
 
+
 def from_shaped_iter(iterable, dtype, shape):
     a = np.empty(shape, dtype)
     for i, x in enumerate(iterable):
@@ -67,6 +68,18 @@ class TestIsingModel(unittest.TestCase):
         a = np.dot(h, s) + .5 * np.dot(s, np.dot(j_matrix, s))
         model = IsingModel(h, j_matrix)
         self.assertAlmostEqual(model.hamiltonian(s), -a)
+
+    def test_submodel(self):
+        j = np.random.normal(0, 1, size=(10, 10))
+        j += j.T
+        j /= 2.
+        j[np.diag_indices_from(j)] = np.zeros(10)
+        h = np.random.random(size=10)
+        model = IsingModel(h, j)
+        subm = model.submodel(5)
+        h10 = model.hamiltonian(np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0]))
+        h5 = subm.hamiltonian(np.array([1, 1, 1, 1, 1]))
+        self.assertAlmostEqual(h5, h10)
 
 
 if __name__ == '__main__':

@@ -36,7 +36,7 @@ cdef class IsingModel:
         cdef np.float64_t out = 0.
         cdef np.int64_t i, k
         cdef np.float64_t eff_field = 0.
-        #out = - h @ state - 0.5 * state @ j @ state
+        # out = - h @ state - 0.5 * state @ j @ state
         for i in range(len(h)):
             eff_field = 0.
             for k in range(i):
@@ -64,3 +64,8 @@ cdef class IsingModel:
                 if np.random.random() < p:
                     spins[spin] = 1
             yield spins.astype(bool)
+
+    def submodel(self, num):
+        h = self.h[:num]
+        j = self.j[:num, :num]
+        return IsingModel(h, j)
