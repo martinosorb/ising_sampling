@@ -9,8 +9,8 @@ cdef class IsingModel:
     The constructor takes the local fields h and connection matrix j.
     The number of units is inferred from their sizes."""
 
-    cpdef np.float64_t[:] h
-    cpdef np.float64_t[:, :] j
+    cpdef public np.float64_t[:] h
+    cpdef public np.float64_t[:, :] j
     cdef int numspin
 
     def __init__(self, nh, nj):
