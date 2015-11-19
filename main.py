@@ -5,7 +5,7 @@ pyximport.install()
 from ising_sampling import IsingModel
 
 # Sherrington-Kirkpatrick Spin Glass
-numspin = 100
+numspin = 80
 n = 10000
 j0 = 1.  # standard deviation
 
@@ -15,6 +15,9 @@ j /= 2.
 j[np.diag_indices_from(j)] = np.zeros(numspin)
 
 h = -2 * np.sum(j, axis=1)
+
+np.save("results/h.npy", h)
+np.save("results/j.npy", j)
 
 
 def sample_e_with_beta(beta):
