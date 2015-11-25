@@ -9,8 +9,8 @@ cdef class IsingModel:
     The constructor takes the local fields h and connection matrix j.
     The number of units is inferred from their sizes."""
 
-    cpdef np.float64_t[:] h
-    cpdef np.float64_t[:, :] j
+    cpdef public np.float64_t[:] h
+    cpdef public np.float64_t[:, :] j
     cdef int numspin
 
     def __init__(self, nh, nj):
@@ -36,7 +36,7 @@ cdef class IsingModel:
         cdef np.float64_t out = 0.
         cdef np.int64_t i, k
         cdef np.float64_t eff_field = 0.
-        #out = - h @ state - 0.5 * state @ j @ state
+        # out = - h @ state - 0.5 * state @ j @ state
         for i in range(len(h)):
             eff_field = 0.
             for k in range(i):
@@ -63,4 +63,9 @@ cdef class IsingModel:
                 p /= 1 + p
                 if np.random.random() < p:
                     spins[spin] = 1
-            yield spins.astype(bool)
+            yield spins.astype(bool)  # cython can't handle bools
+
+    def submodel(self, num):
+        h = self.h[:num]
+        j = self.j[:num, :num]
+        return IsingModel(h, j)
