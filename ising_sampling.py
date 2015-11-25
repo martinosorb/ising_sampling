@@ -32,10 +32,8 @@ class IsingModel():
         # input check
         if n <= 0 or not type(n) == int:
             raise ValueError('n must be a positive integer')
-        # results = np.empty([n, self.numspin], dtype=bool)
         # initial state
         self.spins = np.random.choice([True, False], size=self.numspin)
-        # results[0] = self.spins
         # iterative loop
         for itern in range(n):
             for spin in range(self.numspin):
@@ -48,3 +46,8 @@ class IsingModel():
                 if np.random.random() < p:
                     self.spins[spin] = True
             yield self.spins
+
+    def submodel(self, num):
+        h = self.h[:num]
+        j = self.j[:num, :num]
+        return IsingModel(h, j)
