@@ -75,8 +75,9 @@ class TestIsingModel(unittest.TestCase):
         h = np.random.random(size=10)
         model = IsingModel(h, j)
         subm = model.submodel(5)
-        h10 = model.hamiltonian(np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0]))
-        h5 = subm.hamiltonian(np.array([1, 1, 1, 1, 1]))
+        inp = [True, True, True, True, True, False, False, False, False, False]
+        h10 = model.hamiltonian(inp)
+        h5 = subm.hamiltonian(inp[:5])
         self.assertAlmostEqual(h5, h10)
 
 
