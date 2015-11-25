@@ -24,7 +24,8 @@ class IsingModel():
         if state is None:
             state = self.spins
         state = np.asarray(state)
-        return - self.h @ state - 0.5 * state @ self.j @ state
+        return - np.dot(self.h, state) - 0.5 * np.dot(state,
+                                                      np.dot(self.j, state))
 
     def sample(self, n):
         """Extract n states by Gibbs sampling of the Ising network."""
