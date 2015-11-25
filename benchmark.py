@@ -3,8 +3,8 @@ pyximport.install()
 from ising_sampling import IsingModel
 import numpy as np
 
-numspin = 20
-n = 1000
+numspin = 30
+n = 4000
 
 np.random.seed(56426481)
 h = np.random.normal(size=numspin)
