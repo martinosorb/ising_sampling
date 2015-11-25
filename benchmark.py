@@ -11,6 +11,6 @@ j += j.T
 j[np.diag_indices_from(j)] = np.zeros(numspin)
 np.random.seed()
 
-model = IsingModel(h, j)
+model = IsingModel(numspin, h, j)
 for x in model.sample(n):
     pass

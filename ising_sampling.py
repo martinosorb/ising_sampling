@@ -24,20 +24,28 @@ class IsingModel():
         self.j = j
         self.h = h
 
-    def hamiltonian(self, state=None):
+    def hamiltonian(self, state):
         """The Ising hamiltonian based on the given h and j."""
-        if state is None:
-            state = self.spins
         state = np.asarray(state)
+        if np.size(self.h) == 1:
+            return self.__hamiltonian_mf(state)
+        return self.__hamiltonian_full(state)
 
-        if np.size(self.h) == 1:  # mf mode
-            act = np.sum(state)
-            return -self.h * act - 0.5 * self.j * act * (act - 1)
+    # @cachefunc
+    def __hamiltonian_mf(self, state):
+        act = np.sum(state)
+        return -self.h * act - 0.5 * self.j * act * (act - 1)
+
+    def __hamiltonian_full(self, state):
         return - np.dot(self.h, state) - 0.5 * np.dot(state,
                                                       np.dot(self.j, state))
 
     def sample(self, n):
         """Extract n states by Gibbs sampling of the Ising network."""
+        if np.size(self.h) == 1:
+            hamiltonian = self.__hamiltonian_mf
+        else:
+            hamiltonian = self.__hamiltonian_full
         # input check
         if n <= 0 or not type(n) == int:
             raise ValueError('n must be a positive integer')
@@ -47,9 +55,9 @@ class IsingModel():
         for itern in range(n):
             for spin in range(self.numspin):
                 self.spins[spin] = True
-                pos_energy = self.hamiltonian()
+                pos_energy = hamiltonian(self.spins)
                 self.spins[spin] = False
-                neg_energy = self.hamiltonian()
+                neg_energy = hamiltonian(self.spins)
                 p = np.exp(neg_energy - pos_energy)
                 p /= 1 + p
                 if np.random.random() < p:
