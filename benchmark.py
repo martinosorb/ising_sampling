@@ -14,4 +14,5 @@ j[np.diag_indices_from(j)] = np.zeros(numspin)
 np.random.seed()
 
 model = IsingModel(h, j)
-model.sample(n)
+for x in model.sample(n):
+    pass
