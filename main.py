@@ -24,7 +24,7 @@ np.save(resdir + "j.npy", j)
 
 
 def sample_e_with_beta(beta):
-    model = IsingModel(n, beta * h, beta * j)
+    model = IsingModel(numspin, beta * h, beta * j)
     sampled_states = model.sample(n)
 
     states = np.empty([n, numspin], dtype=bool)
@@ -32,7 +32,7 @@ def sample_e_with_beta(beta):
 
     for i, state in enumerate(sampled_states):
         states[i] = state
-        energies[i] = model.hamiltonian(state.astype(int))
+        energies[i] = model.hamiltonian(state)
 
     np.save(resdir + "states_" + "beta" + str(beta) + "_n" +
             str(numspin) + ".npy", states)
