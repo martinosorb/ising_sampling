@@ -7,6 +7,8 @@ numspin = 80
 n = 10000
 j0 = 1.  # standard deviation
 
+resdir = 'results/'
+
 j = np.random.normal(0, 2 * j0, size=(numspin, numspin))
 j += np.copy(j.T)
 j /= 2.
@@ -14,8 +16,8 @@ j[np.diag_indices_from(j)] = np.zeros(numspin)
 
 h = -2 * np.sum(j, axis=1)
 
-np.save("results/h.npy", h)
-np.save("results/j.npy", j)
+np.save(resdir + "h.npy", h)
+np.save(resdir + "j.npy", j)
 
 
 def sample_e_with_beta(beta):
@@ -29,9 +31,9 @@ def sample_e_with_beta(beta):
         states[i] = state
         energies[i] = model.hamiltonian(state.astype(int))
 
-    np.save("results/states_" + "beta" + str(beta) + "_n" +
+    np.save(resdir + "states_" + "beta" + str(beta) + "_n" +
             str(numspin) + ".npy", states)
-    np.save("results/energies_" + "beta" + str(beta) + "_n" +
+    np.save(resdir + "energies_" + "beta" + str(beta) + "_n" +
             str(numspin) + ".npy", energies)
 
 
