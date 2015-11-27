@@ -24,7 +24,7 @@ np.save(resdir + "j.npy", j)
 
 
 def sample_e_with_beta(beta):
-    model = IsingModel(beta * h, beta * j)
+    model = IsingModel(n, beta * h, beta * j)
     sampled_states = model.sample(n)
 
     states = np.empty([n, numspin], dtype=bool)
