@@ -6,30 +6,22 @@ class IsingModel():
     The constructor takes the number of spins n, local fields h
     and connection matrix j."""
     def __init__(self, n, h, j):
-        h = np.asarray(h)
-        j = np.asarray(j)
+        self.h = np.asarray(h)
+        self.j = np.asarray(j)
         # size checks
         if type(n) is not int or n <= 0:
             raise ValueError('n must be a positive integer')
         self.numspin = n
-        if np.size(h) == 1:
-            if np.size(j) != 1:
-                raise ValueError('Inconsistent h and j sizes')
-        else:
-            if len(h) != n or j.shape != (n, n):
-                raise ValueError('Inconsistent h and j sizes')
-        if not np.all(j == j.T):
-            raise UserWarning('J is not a symmetric matrix')
-        # record the values
-        self.j = j
-        self.h = h
-
-    def hamiltonian(self, state):
-        """The Ising hamiltonian based on the given h and j."""
-        state = np.asarray(state)
         if np.size(self.h) == 1:
-            return self.__hamiltonian_mf(state)
-        return self.__hamiltonian_full(state)
+            if np.size(self.j) != 1:
+                raise ValueError('Inconsistent h and j sizes')
+            self.hamiltonian = self.__hamiltonian_mf
+        else:
+            if len(self.h) != n or self.j.shape != (n, n):
+                raise ValueError('Inconsistent h and j sizes')
+            self.hamiltonian = self.__hamiltonian_full
+        if not np.all(self.j == self.j.T):
+            raise UserWarning('j is not a symmetric matrix')
 
     # @cachefunc
     def __hamiltonian_mf(self, state):
@@ -65,6 +57,36 @@ class IsingModel():
             yield self.spins
 
     def submodel(self, num):
+        if np.size(self.h) == 1:
+            return self
         h = self.h[:num]
         j = self.j[:num, :num]
         return IsingModel(num, h, j)
+
+
+class Rbm(IsingModel):
+    def __init__(self, nvis, nhid, visbias, hidbias, vishid):
+        visbias = np.asarray(visbias)
+        hidbias = np.asarray(hidbias)
+        vishid = np.asarray(vishid)
+        if type(nvis) is not int or nvis <= 0:
+            raise ValueError('nvis must be a positive integer')
+        if type(nhid) is not int or nhid <= 0:
+            raise ValueError('nhid must be a positive integer')
+        self.numspin = nvis + nhid
+        self.nvis, self.nhid = nvis, nhid
+        if len(visbias) != nvis or len(hidbias) != nhid:
+            raise ValueError('Inconsistent biases size.')
+        if vishid.shape != (nvis, nhid):
+            raise ValueError('Inconsistent weight matrix shape.\
+                             Maybe transpose?')
+        self.hamiltonian = self.__hamiltonian_rbm
+
+    def submodel(self, num):
+        raise NotImplementedError()
+
+    def __hamiltonian_rbm(self, state):
+        vis = state[:self.nvis]
+        hid = state[self.nvis:]
+        return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
+            np.dot(vis, np.dot(hid, self.vishid))
