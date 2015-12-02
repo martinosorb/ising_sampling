@@ -34,10 +34,10 @@ class IsingModel():
 
     def sample(self, n):
         """Extract n states by Gibbs sampling of the Ising network."""
-        if np.size(self.h) == 1:
-            hamiltonian = self.__hamiltonian_mf
-        else:
-            hamiltonian = self.__hamiltonian_full
+        # if np.size(self.h) == 1:
+        #     hamiltonian = self.__hamiltonian_mf
+        # else:
+        #     hamiltonian = self.__hamiltonian_full
         # input check
         if n <= 0 or not type(n) == int:
             raise ValueError('n must be a positive integer')
@@ -47,9 +47,9 @@ class IsingModel():
         for itern in range(n):
             for spin in range(self.numspin):
                 self.spins[spin] = True
-                pos_energy = hamiltonian(self.spins)
+                pos_energy = self.hamiltonian(self.spins)
                 self.spins[spin] = False
-                neg_energy = hamiltonian(self.spins)
+                neg_energy = self.hamiltonian(self.spins)
                 p = np.exp(neg_energy - pos_energy)
                 p /= 1 + p
                 if np.random.random() < p:
