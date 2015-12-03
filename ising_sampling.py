@@ -48,7 +48,7 @@ class IsingModel():
                              Maybe transpose?')
         self.hamiltonian = self.__hamiltonian_rbm
 
-    # @cachefunc
+    # HAMILTONIANS in various forms
     def __hamiltonian_mf(self, state):
         act = np.sum(state)
         return -self.h * act - 0.5 * self.j * act * (act - 1)
@@ -62,6 +62,13 @@ class IsingModel():
         hid = state[self.nvis:]
         return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
             np.dot(vis, np.dot(hid, self.vishid))
+
+    # Utility functions for computing the Fisher Information tensor
+    def __fimfunction_rbm(self, state):
+        vis = state[:self.nvis]
+        hid = state[self.nvis:]
+        prod = np.outer(vis, hid)
+        return np.hstack([vis, hid, np.ravel(prod)])
 
     def sample(self, n):
         """Extract n states by Gibbs sampling of the Ising network."""
@@ -90,37 +97,3 @@ class IsingModel():
         model = IsingModel(num)
         model.import_ising01(h, j)
         return model
-
-
-# class Rbm(IsingModel):
-#     def __init__(self, nvis, nhid, visbias, hidbias, vishid):
-#         visbias = np.asarray(visbias)
-#         hidbias = np.asarray(hidbias)
-#         vishid = np.asarray(vishid)
-#         if type(nvis) is not int or nvis <= 0:
-#             raise ValueError('nvis must be a positive integer')
-#         if type(nhid) is not int or nhid <= 0:
-#             raise ValueError('nhid must be a positive integer')
-#         self.numspin = nvis + nhid
-#         self.nvis, self.nhid = nvis, nhid
-#         if len(visbias) != nvis or len(hidbias) != nhid:
-#             raise ValueError('Inconsistent biases size.')
-#         if vishid.shape != (nvis, nhid):
-#             raise ValueError('Inconsistent weight matrix shape.\
-#                              Maybe transpose?')
-#         self.hamiltonian = self.__hamiltonian_rbm
-
-#     def submodel(self, num):
-#         raise NotImplementedError()
-
-#     def __hamiltonian_rbm(self, state):
-#         vis = state[:self.nvis]
-#         hid = state[self.nvis:]
-#         return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
-#             np.dot(vis, np.dot(hid, self.vishid))
-
-#     def __fimfunction_rbm(self, state):
-#         vis = state[:self.nvis]
-#         hid = state[self.nvis:]
-#         prod = np.outer(vis, hid)
-#         return np.hstack([vis, hid, np.ravel(prod)])
