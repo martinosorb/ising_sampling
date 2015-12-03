@@ -5,23 +5,48 @@ class IsingModel():
     """A class to sample from arbitrary Ising models.
     The constructor takes the number of spins n, local fields h
     and connection matrix j."""
-    def __init__(self, n, h, j):
-        self.h = np.asarray(h)
-        self.j = np.asarray(j)
+    def __init__(self, n):
         # size checks
         if type(n) is not int or n <= 0:
             raise ValueError('n must be a positive integer')
         self.numspin = n
-        if np.size(self.h) == 1:
-            if np.size(self.j) != 1:
-                raise ValueError('Inconsistent h and j sizes')
-            self.hamiltonian = self.__hamiltonian_mf
-        else:
-            if len(self.h) != n or self.j.shape != (n, n):
-                raise ValueError('Inconsistent h and j sizes')
-            self.hamiltonian = self.__hamiltonian_full
-        if not np.all(self.j == self.j.T):
+
+    def import_ising01(self, h, j):
+        h = np.asarray(h)
+        j = np.asarray(j)
+        n = self.numspin
+        if len(h) != n or j.shape != (n, n):
+            raise ValueError('Inconsistent h and j sizes')
+        if not np.all(j == j.T):
             raise UserWarning('j is not a symmetric matrix')
+        self.hamiltonian = self.__hamiltonian_full
+        self.h = h
+        self.j = j
+
+    def import_uniform(self, h, j):
+        if not np.size(h) == 1 and np.size(j) == 1:
+            raise ValueError('h and j must be scalars')
+        self.h = h
+        self.j = j
+        self.hamiltonian = self.__hamiltonian_mf
+
+    def import_rbm(self, nvis, nhid, visbias, hidbias, vishid):
+        visbias = np.asarray(visbias)
+        hidbias = np.asarray(hidbias)
+        vishid = np.asarray(vishid)
+        if type(nvis) is not int or nvis <= 0:
+            raise ValueError('nvis must be a positive integer')
+        if type(nhid) is not int or nhid <= 0:
+            raise ValueError('nhid must be a positive integer')
+        if nvis + nhid != self.numspin:
+            raise ValueError('nvis+nhid must be equal to the number of units')
+        self.nvis, self.nhid = nvis, nhid
+        if len(visbias) != nvis or len(hidbias) != nhid:
+            raise ValueError('Inconsistent biases size.')
+        if vishid.shape != (nvis, nhid):
+            raise ValueError('Inconsistent weight matrix shape.\
+                             Maybe transpose?')
+        self.hamiltonian = self.__hamiltonian_rbm
 
     # @cachefunc
     def __hamiltonian_mf(self, state):
@@ -34,10 +59,6 @@ class IsingModel():
 
     def sample(self, n):
         """Extract n states by Gibbs sampling of the Ising network."""
-        # if np.size(self.h) == 1:
-        #     hamiltonian = self.__hamiltonian_mf
-        # else:
-        #     hamiltonian = self.__hamiltonian_full
         # input check
         if n <= 0 or not type(n) == int:
             raise ValueError('n must be a positive integer')
@@ -57,36 +78,43 @@ class IsingModel():
             yield self.spins
 
     def submodel(self, num):
-        if np.size(self.h) == 1:
-            return self
+        # only works with full Ising
         h = self.h[:num]
         j = self.j[:num, :num]
-        return IsingModel(num, h, j)
+        model = IsingModel(num)
+        model.import_ising01(h, j)
+        return model
 
 
-class Rbm(IsingModel):
-    def __init__(self, nvis, nhid, visbias, hidbias, vishid):
-        visbias = np.asarray(visbias)
-        hidbias = np.asarray(hidbias)
-        vishid = np.asarray(vishid)
-        if type(nvis) is not int or nvis <= 0:
-            raise ValueError('nvis must be a positive integer')
-        if type(nhid) is not int or nhid <= 0:
-            raise ValueError('nhid must be a positive integer')
-        self.numspin = nvis + nhid
-        self.nvis, self.nhid = nvis, nhid
-        if len(visbias) != nvis or len(hidbias) != nhid:
-            raise ValueError('Inconsistent biases size.')
-        if vishid.shape != (nvis, nhid):
-            raise ValueError('Inconsistent weight matrix shape.\
-                             Maybe transpose?')
-        self.hamiltonian = self.__hamiltonian_rbm
+# class Rbm(IsingModel):
+#     def __init__(self, nvis, nhid, visbias, hidbias, vishid):
+#         visbias = np.asarray(visbias)
+#         hidbias = np.asarray(hidbias)
+#         vishid = np.asarray(vishid)
+#         if type(nvis) is not int or nvis <= 0:
+#             raise ValueError('nvis must be a positive integer')
+#         if type(nhid) is not int or nhid <= 0:
+#             raise ValueError('nhid must be a positive integer')
+#         self.numspin = nvis + nhid
+#         self.nvis, self.nhid = nvis, nhid
+#         if len(visbias) != nvis or len(hidbias) != nhid:
+#             raise ValueError('Inconsistent biases size.')
+#         if vishid.shape != (nvis, nhid):
+#             raise ValueError('Inconsistent weight matrix shape.\
+#                              Maybe transpose?')
+#         self.hamiltonian = self.__hamiltonian_rbm
 
-    def submodel(self, num):
-        raise NotImplementedError()
+#     def submodel(self, num):
+#         raise NotImplementedError()
 
-    def __hamiltonian_rbm(self, state):
-        vis = state[:self.nvis]
-        hid = state[self.nvis:]
-        return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
-            np.dot(vis, np.dot(hid, self.vishid))
+#     def __hamiltonian_rbm(self, state):
+#         vis = state[:self.nvis]
+#         hid = state[self.nvis:]
+#         return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
+#             np.dot(vis, np.dot(hid, self.vishid))
+
+#     def __fimfunction_rbm(self, state):
+#         vis = state[:self.nvis]
+#         hid = state[self.nvis:]
+#         prod = np.outer(vis, hid)
+#         return np.hstack([vis, hid, np.ravel(prod)])

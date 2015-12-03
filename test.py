@@ -18,23 +18,27 @@ class TestIsingModel(unittest.TestCase):
 
     def test_input_data(self):
         with self.assertRaises(ValueError):
-            model = IsingModel(3, [0, 0, 0], [[0, 0], [0, 0]])
+            model = IsingModel(3)
+            model.import_ising01([0, 0, 0], [[0, 0], [0, 0]])
         with self.assertRaises(ValueError):
-            model = IsingModel(2, [0, 0, 0], [[0, 0], [0, 0]])
+            model = IsingModel(2)
+            model.import_ising01([0, 0, 0], [[0, 0], [0, 0]])
         with self.assertRaises(ValueError):
-            model = IsingModel(0, [], [[]])
+            model = IsingModel(0)
         with self.assertRaises(ValueError):
-            model = IsingModel(2, [0, 0], [[0, 0], [0, 0]])
+            model = IsingModel(2)
             list(model.sample(-1))
 
     def test_res_shapes(self):
-        model = IsingModel(2, [0, 0], [[0, 0], [0, 0]])
+        model = IsingModel(2)
+        model.import_ising01([0, 0], [[0, 0], [0, 0]])
         res = from_shaped_iter(model.sample(3), bool, (3, 2))
         self.assertEqual(len(res[0]), 2)
         self.assertEqual(len(res[:, 0]), 3)
 
     def test_shape_null(self):
-        model = IsingModel(1, [0], [[0]])
+        model = IsingModel(1)
+        model.import_ising01([0], [[0]])
         res = from_shaped_iter(model.sample(1), bool, (1, 1))
         self.assertEqual(res.shape[0], 1)
         self.assertEqual(res.shape[1], 1)
@@ -42,7 +46,8 @@ class TestIsingModel(unittest.TestCase):
     def test_probabilities_onlyfields(self):
         h = [np.random.normal()]
         j_matrix = [[0]]
-        model = IsingModel(1, h, j_matrix)
+        model = IsingModel(1)
+        model.import_ising01(h, j_matrix)
         res = from_shaped_iter(model.sample(20000), bool, (20000, 1))
         p1 = 1 / (1 + np.exp(-h[0]))
         obs_prob = np.mean(res, axis=0)[0]
@@ -52,7 +57,8 @@ class TestIsingModel(unittest.TestCase):
         h = [0, 0]
         j = np.random.normal()
         j_matrix = [[0, j], [j, 0]]
-        model = IsingModel(2, h, j_matrix)
+        model = IsingModel(2)
+        model.import_ising01(h, j_matrix)
         res = from_shaped_iter(model.sample(20000), bool, (20000, 2))
         prod = res[:, 0] * res[:, 1]
         p1 = np.mean(prod)
@@ -62,13 +68,15 @@ class TestIsingModel(unittest.TestCase):
         h = np.random.normal(size=2)
         j = np.random.normal()
         j_matrix = [[0, j], [j, 0]]
-        model = IsingModel(2, h, j_matrix)
+        model = IsingModel(2)
+        model.import_ising01(h, j_matrix)
         self.assertAlmostEqual(model.hamiltonian(np.array([0, 0])), 0)
         h = np.array([-1, 1, -1])
         j_matrix = np.array([[0, 1, 2], [1, 0, -1], [2, -1, 0]])
         s = np.array([1, 1, 0])
         a = np.dot(h, s) + .5 * np.dot(s, np.dot(j_matrix, s))
-        model = IsingModel(3, h, j_matrix)
+        model = IsingModel(3)
+        model.import_ising01(h, j_matrix)
         self.assertAlmostEqual(model.hamiltonian(s), -a)
 
     def test_mf_hamiltonian(self):
@@ -76,8 +84,10 @@ class TestIsingModel(unittest.TestCase):
         j = np.random.normal()
         j_matrix = [[0, j], [j, 0]]
         h_vector = [h, h]
-        full_model = IsingModel(2, h_vector, j_matrix)
-        mf_model = IsingModel(2, h, j)
+        full_model = IsingModel(2)
+        mf_model = IsingModel(2)
+        full_model.import_ising01(h_vector, j_matrix)
+        mf_model.import_uniform(h, j)
         state = np.random.choice([True, False], size=2)
         self.assertAlmostEqual(full_model.hamiltonian(state),
                                mf_model.hamiltonian(state))
@@ -88,7 +98,8 @@ class TestIsingModel(unittest.TestCase):
         j /= 2.
         j[np.diag_indices_from(j)] = np.zeros(10)
         h = np.random.random(size=10)
-        model = IsingModel(10, h, j)
+        model = IsingModel(10)
+        model.import_ising01(h, j)
         subm = model.submodel(5)
         inp = [True, True, True, True, True, False, False, False, False, False]
         h10 = model.hamiltonian(inp)
