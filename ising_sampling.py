@@ -23,7 +23,7 @@ class IsingModel():
         self.h = h
         self.j = j
 
-    def import_uniform(self, h, j):
+    def import_uniform01(self, h, j):
         if not np.size(h) == 1 and np.size(j) == 1:
             raise ValueError('h and j must be scalars')
         self.h = h
@@ -56,6 +56,12 @@ class IsingModel():
     def __hamiltonian_full(self, state):
         return - np.dot(self.h, state) - 0.5 * np.dot(state,
                                                       np.dot(self.j, state))
+
+    def __hamiltonian_rbm(self, state):
+        vis = state[:self.nvis]
+        hid = state[self.nvis:]
+        return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
+            np.dot(vis, np.dot(hid, self.vishid))
 
     def sample(self, n):
         """Extract n states by Gibbs sampling of the Ising network."""

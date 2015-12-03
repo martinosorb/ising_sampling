@@ -13,18 +13,20 @@ j = np.ones((numspin, numspin)) * j0
 h = np.ones(numspin) * h0
 j[np.diag_indices_from(j)] = np.zeros(numspin)
 
-t = time()
-model_full = IsingModel(numspin, h, j)
+model_full = IsingModel(numspin)
+model_full.import_ising01(h, j)
 np.random.seed(seed)
+
+t = time()
 for x in model_full.sample(n):
     pass
-
 print(time() - t)
-t = time()
 
-model_mf = IsingModel(numspin, h0, j0)
+model_mf = IsingModel(numspin)
+model_mf.import_uniform01(h0, j0)
 np.random.seed(seed)
+
+t = time()
 for x in model_mf.sample(n):
     pass
-
 print(time() - t)

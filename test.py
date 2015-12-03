@@ -87,7 +87,7 @@ class TestIsingModel(unittest.TestCase):
         full_model = IsingModel(2)
         mf_model = IsingModel(2)
         full_model.import_ising01(h_vector, j_matrix)
-        mf_model.import_uniform(h, j)
+        mf_model.import_uniform01(h, j)
         state = np.random.choice([True, False], size=2)
         self.assertAlmostEqual(full_model.hamiltonian(state),
                                mf_model.hamiltonian(state))
