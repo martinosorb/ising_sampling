@@ -54,6 +54,9 @@ class IsingModel():
         act = np.sum(state)
         return -self.h * act - 0.5 * self.j * act * (act - 1)
 
+    def energydiff_full(self, state, i):
+        return self.h[i] + np.dot(self.j[i], state)
+
     def __hamiltonian_full(self, state):
         return - np.dot(self.h, state) - 0.5 * np.dot(state,
                                                       np.dot(self.j, state))
@@ -88,14 +91,20 @@ class IsingModel():
         # iterative loop
         for itern in range(n):
             for spin in range(self.numspin):
-                self.spins[spin] = True
-                pos_energy = self.hamiltonian(self.spins)
-                self.spins[spin] = False
-                neg_energy = self.hamiltonian(self.spins)
-                p = np.exp(neg_energy - pos_energy)
+                # self.spins[spin] = True
+                # pos_energy = self.hamiltonian(self.spins)
+                # self.spins[spin] = False
+                # neg_energy = self.hamiltonian(self.spins)
+                # p = np.exp(neg_energy - pos_energy)
+                # BEGIN new part
+                p = np.exp(self.energydiff_full(self.spins, spin))
+                # self.spins[spin] = False
+                # END new part
                 p /= 1 + p
                 if np.random.random() < p:
                     self.spins[spin] = True
+                else:
+                    self.spins[spin] = False
             yield self.spins
 
     def submodel(self, num):

@@ -10,9 +10,9 @@ h = np.random.normal(size=numspin)
 j = np.random.normal(size=(numspin, numspin))
 j += j.T
 j[np.diag_indices_from(j)] = np.zeros(numspin)
-np.random.seed()
+# np.random.seed()
 
-ntrials = 10
+ntrials = 20
 
 t = time()
 for _ in range(10):

@@ -138,6 +138,23 @@ class TestIsingModel(unittest.TestCase):
         self.assertAlmostEqual(fim[2, 0], cov_visprod, places=2)
         self.assertAlmostEqual(fim[1, 2], cov_hidprod, places=2)
 
+    def test_diff(self):
+        h = np.random.normal(size=2)
+        j = np.random.normal()
+        j_matrix = [[0, j], [j, 0]]
+        model = IsingModel(2)
+        model.import_ising01(h, j_matrix)
+
+        spins = np.random.choice([True, False], size=2)
+        spin = np.random.choice([0, 1])
+        spins[spin] = True
+        pos_energy = model.hamiltonian(spins)
+        spins[spin] = False
+        neg_energy = model.hamiltonian(spins)
+        p = neg_energy - pos_energy
+
+        self.assertAlmostEqual(p, model.energydiff_full(spins, spin))
+
 
 if __name__ == '__main__':
     unittest.main()
