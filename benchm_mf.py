@@ -2,8 +2,8 @@ from ising_sampling import IsingModel
 import numpy as np
 from time import time
 
-numspin = 30
-n = 4000
+numspin = 300
+n = 100
 seed = np.random.choice(1000)
 
 j0 = np.random.random()

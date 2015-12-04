@@ -112,7 +112,7 @@ class TestIsingModel(unittest.TestCase):
         hidbias = np.random.normal()
 
         model = IsingModel(2)
-        model.import_rbm(1, 1, [visbias], [hidbias], [[j]])
+        model.import_rbm01(1, 1, [visbias], [hidbias], [[j]])
 
         z = (np.exp(visbias) + np.exp(hidbias) +
              np.exp(visbias + hidbias + j) + 1)
@@ -138,7 +138,7 @@ class TestIsingModel(unittest.TestCase):
         self.assertAlmostEqual(fim[2, 0], cov_visprod, places=2)
         self.assertAlmostEqual(fim[1, 2], cov_hidprod, places=2)
 
-    def test_diff(self):
+    def test_diff_full(self):
         h = np.random.normal(size=2)
         j = np.random.normal()
         j_matrix = [[0, j], [j, 0]]
@@ -153,8 +153,35 @@ class TestIsingModel(unittest.TestCase):
         neg_energy = model.hamiltonian(spins)
         p = neg_energy - pos_energy
 
-        self.assertAlmostEqual(p, model.energydiff_full(spins, spin))
+        self.assertAlmostEqual(p, model.energydiff(spins, spin))
 
+    def test_diff_mf(self):
+        h = np.random.normal()
+        j = np.random.normal()
+        model = IsingModel(2)
+        model.import_uniform01(h, j)
+
+        spins = np.random.choice([True, False], size=2)
+        spin = np.random.choice([0, 1])
+        spins[spin] = True
+        pos_energy = model.hamiltonian(spins)
+        spins[spin] = False
+        neg_energy = model.hamiltonian(spins)
+        p = neg_energy - pos_energy
+
+        self.assertAlmostEqual(p, model.energydiff(spins, spin))
+
+    def test_rbm_hamiltonian(self):
+        nvis, nhid = 10, 5
+        vishid = np.random.normal(size=(nvis, nhid))
+        model = IsingModel(nvis + nhid)
+        model.import_rbm01(nvis, nhid, np.zeros(nvis), np.zeros(nhid), vishid)
+        state = np.random.choice([True, False], size=nvis + nhid)
+        vis, hid = state[:nvis], state[nvis:]
+        energy = -np.dot(vis, np.dot(hid, vishid.T))
+        self.assertAlmostEqual(model.hamiltonian(state), energy)
+
+    # add a physical test (that checks the phase transition directly)
 
 if __name__ == '__main__':
     unittest.main()

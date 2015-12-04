@@ -20,6 +20,7 @@ class IsingModel():
         if not np.all(j == j.T):
             raise UserWarning('j is not a symmetric matrix')
         self.hamiltonian = self.__hamiltonian_full
+        self.energydiff = self.__energydiff_full
         self.h = h
         self.j = j
 
@@ -29,8 +30,9 @@ class IsingModel():
         self.h = h
         self.j = j
         self.hamiltonian = self.__hamiltonian_mf
+        self.energydiff = self.__energydiff_mf
 
-    def import_rbm(self, nvis, nhid, visbias, hidbias, vishid):
+    def import_rbm01(self, nvis, nhid, visbias, hidbias, vishid):
         visbias = np.asarray(visbias)
         hidbias = np.asarray(hidbias)
         vishid = np.asarray(vishid)
@@ -46,26 +48,40 @@ class IsingModel():
         if vishid.shape != (nvis, nhid):
             raise ValueError('Inconsistent weight matrix shape.\
                              Maybe transpose?')
-        self.visbias, self.hidbias, self.vishid = visbias, hidbias, vishid
-        self.hamiltonian = self.__hamiltonian_rbm
+        # self.visbias, self.hidbias, self.vishid = visbias, hidbias, vishid.T
+        # self.hamiltonian = self.__hamiltonian_rbm
+        # self.energydiff = self.__energydiff_rbm
+        self.h = np.hstack([visbias, hidbias])
+        self.j = np.zeros([self.numspin, self.numspin])
+        self.j[nvis:, :nvis] = vishid.T
+        self.j += self.j.T
+        self.hamiltonian = self.__hamiltonian_full
+        self.energydiff = self.__energydiff_full
 
     # HAMILTONIANS in various forms
+    def __energydiff_mf(self, state, i):
+        state[i] = False
+        return self.h + self.j * np.sum(state)
+
     def __hamiltonian_mf(self, state):
         act = np.sum(state)
         return -self.h * act - 0.5 * self.j * act * (act - 1)
 
-    def energydiff_full(self, state, i):
+    def __energydiff_full(self, state, i):
         return self.h[i] + np.dot(self.j[i], state)
 
     def __hamiltonian_full(self, state):
         return - np.dot(self.h, state) - 0.5 * np.dot(state,
                                                       np.dot(self.j, state))
 
-    def __hamiltonian_rbm(self, state):
-        vis = state[:self.nvis]
-        hid = state[self.nvis:]
-        return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
-            np.dot(vis, np.dot(hid, self.vishid))
+    # def __energydiff_rbm(self, state, i):
+    #     pass
+
+    # def __hamiltonian_rbm(self, state):
+    #     vis = state[:self.nvis]
+    #     hid = state[self.nvis:]
+    #     return - np.dot(vis, self.visbias) - np.dot(hid, self.hidbias) - \
+    #         np.dot(vis, np.dot(hid, self.vishid))
 
     # Utility functions for computing the Fisher Information tensor
     def fimfunction_rbm(self, state):
@@ -91,20 +107,13 @@ class IsingModel():
         # iterative loop
         for itern in range(n):
             for spin in range(self.numspin):
-                # self.spins[spin] = True
-                # pos_energy = self.hamiltonian(self.spins)
-                # self.spins[spin] = False
-                # neg_energy = self.hamiltonian(self.spins)
-                # p = np.exp(neg_energy - pos_energy)
                 # BEGIN new part
-                p = np.exp(self.energydiff_full(self.spins, spin))
-                # self.spins[spin] = False
+                p = np.exp(self.energydiff(self.spins, spin))
+                self.spins[spin] = False
                 # END new part
                 p /= 1 + p
                 if np.random.random() < p:
                     self.spins[spin] = True
-                else:
-                    self.spins[spin] = False
             yield self.spins
 
     def submodel(self, num):
