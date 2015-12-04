@@ -1,8 +1,9 @@
 from ising_sampling import IsingModel
 import numpy as np
+from time import time
 
 numspin = 30
-n = 4000
+n = 1000
 
 np.random.seed(56426481)
 h = np.random.normal(size=numspin)
@@ -11,8 +12,15 @@ j += j.T
 j[np.diag_indices_from(j)] = np.zeros(numspin)
 np.random.seed()
 
-model = IsingModel(numspin)
-model.import_ising01(h, j)
+ntrials = 10
 
-for x in model.sample(n):
-    pass
+t = time()
+for _ in range(10):
+    model = IsingModel(numspin)
+    model.import_ising01(h, j)
+
+    for x in model.sample(n):
+        pass
+t = time() - t
+print('Time taken, ' + str(ntrials) + ' trials:')
+print(str(t) + ' seconds.')
