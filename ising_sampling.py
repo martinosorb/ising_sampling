@@ -46,6 +46,7 @@ class IsingModel():
         if vishid.shape != (nvis, nhid):
             raise ValueError('Inconsistent weight matrix shape.\
                              Maybe transpose?')
+        self.visbias, self.hidbias, self.vishid = visbias, hidbias, vishid
         self.hamiltonian = self.__hamiltonian_rbm
 
     # HAMILTONIANS in various forms
@@ -64,11 +65,18 @@ class IsingModel():
             np.dot(vis, np.dot(hid, self.vishid))
 
     # Utility functions for computing the Fisher Information tensor
-    def __fimfunction_rbm(self, state):
+    def fimfunction_rbm(self, state):
         vis = state[:self.nvis]
         hid = state[self.nvis:]
         prod = np.outer(vis, hid)
         return np.hstack([vis, hid, np.ravel(prod)])
+
+    def fisher_information(self, sample, fimfunction):
+        # it should accept either a sample given as an array
+        # for example one saved before, or a generator given
+        # by the 'sample' method
+        s = [fimfunction(x) for x in sample]
+        return np.cov(s, rowvar=0)
 
     def sample(self, n):
         """Extract n states by Gibbs sampling of the Ising network."""

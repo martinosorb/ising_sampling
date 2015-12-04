@@ -106,6 +106,38 @@ class TestIsingModel(unittest.TestCase):
         h5 = subm.hamiltonian(inp[:5])
         self.assertAlmostEqual(h5, h10)
 
+    def test_rbm_fim(self):
+        j = np.random.normal(0, 1)
+        visbias = np.random.normal()
+        hidbias = np.random.normal()
+
+        model = IsingModel(2)
+        model.import_rbm(1, 1, [visbias], [hidbias], [[j]])
+
+        z = (np.exp(visbias) + np.exp(hidbias) +
+             np.exp(visbias + hidbias + j) + 1)
+        f = lambda x: x / z * (1 - x / z)
+        exp0 = np.exp(visbias + hidbias + j)
+        exp1 = np.exp(visbias) + exp0
+        exp2 = np.exp(hidbias) + exp0
+
+        varvis = f(exp1)
+        varhid = f(exp2)
+        varprod = f(exp0)
+        cov_vishid = exp0 / z - exp1 * exp2 / z ** 2
+        cov_visprod = exp0 / z * (1 - exp1 / z)
+        cov_hidprod = exp0 / z * (1 - exp2 / z)
+
+        sample = model.sample(20000)
+        fim = model.fisher_information(sample, model.fimfunction_rbm)
+
+        self.assertAlmostEqual(fim[0, 0], varvis, places=2)
+        self.assertAlmostEqual(fim[1, 1], varhid, places=2)
+        self.assertAlmostEqual(fim[2, 2], varprod, places=2)
+        self.assertAlmostEqual(fim[1, 0], cov_vishid, places=2)
+        self.assertAlmostEqual(fim[2, 0], cov_visprod, places=2)
+        self.assertAlmostEqual(fim[1, 2], cov_hidprod, places=2)
+
 
 if __name__ == '__main__':
     unittest.main()
