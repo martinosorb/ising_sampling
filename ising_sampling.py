@@ -117,9 +117,12 @@ class IsingModel():
             yield self.spins
 
     def submodel(self, num):
-        # only works with full Ising
-        h = self.h[:num]
-        j = self.j[:num, :num]
+        # don't use with RBM
         model = IsingModel(num)
-        model.import_ising01(h, j)
+        if np.size(self.h) == 1:
+            model.import_uniform01(self.h, self.j)
+        else:
+            h = self.h[:num]
+            j = self.j[:num, :num]
+            model.import_ising01(h, j)
         return model
