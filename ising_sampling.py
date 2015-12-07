@@ -117,6 +117,8 @@ class IsingModel():
             yield self.spins
 
     def submodel(self, num):
+        if num > self.numspin:
+            raise ValueError('Submodel size must be smaller than the model size.')
         # don't use with RBM
         model = IsingModel(num)
         if np.size(self.h) == 1:
