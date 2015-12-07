@@ -48,7 +48,7 @@ class TestIsingModel(unittest.TestCase):
         j_matrix = [[0]]
         model = IsingModel(1)
         model.import_ising01(h, j_matrix)
-        res = from_shaped_iter(model.sample(20000), bool, (20000, 1))
+        res = from_shaped_iter(model.sample(30000), bool, (30000, 1))
         p1 = 1 / (1 + np.exp(-h[0]))
         obs_prob = np.mean(res, axis=0)[0]
         self.assertAlmostEqual(p1, obs_prob, places=2)
@@ -59,7 +59,7 @@ class TestIsingModel(unittest.TestCase):
         j_matrix = [[0, j], [j, 0]]
         model = IsingModel(2)
         model.import_ising01(h, j_matrix)
-        res = from_shaped_iter(model.sample(20000), bool, (20000, 2))
+        res = from_shaped_iter(model.sample(30000), bool, (30000, 2))
         prod = res[:, 0] * res[:, 1]
         p1 = np.mean(prod)
         self.assertAlmostEqual(p1, 1 / (3 * np.exp(-j) + 1), places=2)
@@ -181,7 +181,24 @@ class TestIsingModel(unittest.TestCase):
         energy = -np.dot(vis, np.dot(hid, vishid.T))
         self.assertAlmostEqual(model.hamiltonian(state), energy)
 
-    # add a physical test (that checks the phase transition directly)
+    def test_pysical(self):
+        n = 35
+        h = -0.5
+        j = 1 / n
+        model = IsingModel(n)
+
+        # disordered phase, should be .5 on average
+        beta = 1
+        model.import_uniform01(beta * h, beta * j)
+        sample = from_shaped_iter(model.sample(15000), bool, [15000, n])[200:]
+        self.assertAlmostEqual(np.mean(sample), .5, places=2)
+
+        # ordered phase, sol can be 0 or 1
+        beta = 16
+        model.import_uniform01(beta * h, beta * j)
+        sample = from_shaped_iter(model.sample(2000), bool, [2000, n])[200:]
+        self.assertAlmostEqual(abs(2 * np.mean(sample) - 1), 1, places=2)
+
 
 if __name__ == '__main__':
     unittest.main()
