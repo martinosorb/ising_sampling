@@ -107,10 +107,9 @@ class IsingModel():
         # iterative loop
         for itern in range(n):
             for spin in range(self.numspin):
-                # BEGIN new part
-                p = np.exp(self.energydiff(self.spins, spin))
+                delta_e = self.energydiff(self.spins, spin)
+                p = np.exp(delta_e)
                 self.spins[spin] = False
-                # END new part
                 p /= 1 + p
                 if np.random.random() < p:
                     self.spins[spin] = True
@@ -118,7 +117,7 @@ class IsingModel():
 
     def submodel(self, num):
         if num > self.numspin:
-            raise ValueError('Submodel size must be smaller than the model size.')
+            raise ValueError('Submodel size must be smaller than model size.')
         # don't use with RBM
         model = IsingModel(num)
         if np.size(self.h) == 1:

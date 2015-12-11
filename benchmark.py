@@ -2,6 +2,11 @@ from ising_sampling import IsingModel
 import numpy as np
 from time import time
 
+
+# from pycallgraph import PyCallGraph
+# from pycallgraph.output import GraphvizOutput
+
+# with PyCallGraph(output=GraphvizOutput()):
 numspin = 30
 n = 1000
 
