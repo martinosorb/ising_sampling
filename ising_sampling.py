@@ -1,4 +1,5 @@
 import numpy as np
+import multiprocessing as mp
 
 
 class IsingModel():
@@ -97,23 +98,34 @@ class IsingModel():
         s = [fimfunction(x) for x in sample]
         return np.cov(s, rowvar=0)
 
-    def sample(self, n):
+    def sample(self, n, beta=1):
         """Extract n states by Gibbs sampling of the Ising network."""
         # input check
         if n <= 0 or not type(n) == int:
             raise ValueError('n must be a positive integer')
         # initial state
-        self.spins = np.random.choice([True, False], size=self.numspin)
+        spins = np.random.choice([True, False], size=self.numspin)
         # iterative loop
         for itern in range(n):
             for spin in range(self.numspin):
-                delta_e = self.energydiff(self.spins, spin)
+                delta_e = self.energydiff(spins, spin) * beta
                 p = np.exp(delta_e)
-                self.spins[spin] = False
+                spins[spin] = False
                 p /= 1 + p
                 if np.random.random() < p:
-                    self.spins[spin] = True
-            yield self.spins
+                    spins[spin] = True
+            yield spins
+
+    def sample_function_at_betas(self, betas, N, function, parallel=1):
+        def sample_function(beta):
+            sample = self.sample(N, beta=beta)
+            return [function(x) for x in sample]
+        if parallel > 1:
+            p = mp.pool(parallel)
+            results = p.map(sample_function, betas)
+        else:
+            results = list(map(sample_function, betas))
+        return results
 
     def submodel(self, num):
         if num > self.numspin:

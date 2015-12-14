@@ -2,10 +2,6 @@ import unittest
 from ising_sampling import IsingModel
 import numpy as np
 
-# I want a function sample_ising(h, J, N)
-# which gives me N samples of an Ising model
-# at local fields h and interactions J
-
 
 def from_shaped_iter(iterable, dtype, shape):
     a = np.empty(shape, dtype)
