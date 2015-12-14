@@ -121,7 +121,7 @@ class IsingModel():
             sample = self.sample(N, beta=beta)
             return [function(x) for x in sample]
         if parallel > 1:
-            p = mp.pool(parallel)
+            p = mp.Pool(parallel)
             results = p.map(sample_function, betas)
         else:
             results = list(map(sample_function, betas))
