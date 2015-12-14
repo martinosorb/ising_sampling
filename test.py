@@ -116,7 +116,9 @@ class TestIsingModel(unittest.TestCase):
 
         z = (np.exp(visbias) + np.exp(hidbias) +
              np.exp(visbias + hidbias + j) + 1)
-        f = lambda x: x / z * (1 - x / z)
+
+        def f(x):
+            return x / z * (1 - x / z)
         exp0 = np.exp(visbias + hidbias + j)
         exp1 = np.exp(visbias) + exp0
         exp2 = np.exp(hidbias) + exp0
@@ -181,7 +183,7 @@ class TestIsingModel(unittest.TestCase):
         energy = -np.dot(vis, np.dot(hid, vishid.T))
         self.assertAlmostEqual(model.hamiltonian(state), energy)
 
-    def test_pysical(self):
+    def test_physical(self):
         n = 35
         h = -0.5
         j = 1 / n
