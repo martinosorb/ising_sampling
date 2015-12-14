@@ -124,8 +124,8 @@ class IsingModel():
     def sample_function_at_betas(self, betas, N, function, parallel=1):
         if parallel > 1:
             p = mp.Pool(parallel)
-            args = [(self, beta, N, function) for beta in betas]
-            results = p.map(self.sample_function, args)
+            args = [(self.sample, beta, N, function) for beta in betas]
+            results = p.map(self.__sample_function, args)
         else:
             results = list(map(sample_function, betas))
         return results
