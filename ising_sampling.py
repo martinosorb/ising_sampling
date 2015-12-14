@@ -116,8 +116,9 @@ class IsingModel():
                     spins[spin] = True
             yield spins
 
-    def sample_function((self, beta, N, function)):
-        sample = self.sample(N, beta=beta)
+    def __sample_function(argtuple):
+        (samplefunc, beta, N, function) = argtuple
+        sample = samplefunc(N, beta=beta)
         return [function(x) for x in sample]
 
     def sample_function_at_betas(self, betas, N, function, parallel=1):
