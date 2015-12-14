@@ -116,10 +116,12 @@ class IsingModel():
                     spins[spin] = True
             yield spins
 
+    def sample_function(self, beta, N, function):
+        sample = self.sample(N, beta=beta)
+        return [function(x) for x in sample]
+
     def sample_function_at_betas(self, betas, N, function, parallel=1):
-        def sample_function(beta):
-            sample = self.sample(N, beta=beta)
-            return [function(x) for x in sample]
+        sample_function = lambda b: self.sample_function(b, N, function)
         if parallel > 1:
             p = mp.Pool(parallel)
             results = p.map(sample_function, betas)
