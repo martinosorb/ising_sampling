@@ -121,10 +121,10 @@ class IsingModel():
         return [function(x) for x in sample]
 
     def sample_function_at_betas(self, betas, N, function, parallel=1):
-        sample_function = lambda b: self.sample_function(b, N, function)
+        k = len(betas)
         if parallel > 1:
             p = mp.Pool(parallel)
-            results = p.map(sample_function, betas)
+            results = p.map(self.sample_function, betas, N * np.ones(k), [function for _ in range(k)])
         else:
             results = list(map(sample_function, betas))
         return results
