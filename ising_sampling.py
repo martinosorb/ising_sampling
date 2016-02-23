@@ -44,7 +44,7 @@ class IsingModel():
         if nvis + nhid != self.numspin:
             raise ValueError('nvis+nhid must be equal to the number of units')
         self.nvis, self.nhid = nvis, nhid
-        if len(visbias) != nvis or len(hidbias) != nhid:
+        if visbias.size != nvis or hidbias.size != nhid:
             raise ValueError('Inconsistent biases size.')
         if vishid.shape != (nvis, nhid):
             raise ValueError('Inconsistent weight matrix shape.\
@@ -91,6 +91,10 @@ class IsingModel():
         prod = np.outer(vis, hid)
         return np.hstack([vis, hid, np.ravel(prod)])
 
+    def fimfunction_pairwise(self, state):
+        prod_pairs = np.outer(state, state)[np.triu_indices(self.numspin, 1)]
+        return np.hstack([state, np.ravel(prod_pairs)])
+
     def fisher_information(self, sample, fimfunction):
         # it should accept either a sample given as an array
         # for example one saved before, or a generator given
@@ -122,6 +126,7 @@ class IsingModel():
         return [function(x) for x in sample]
 
     def sample_function_at_betas(self, betas, N, function, parallel=1):
+        raise ImportError('Not implemented')
         if parallel > 1:
             p = mp.Pool(parallel)
             args = [(self.sample, beta, N, function) for beta in betas]

@@ -197,6 +197,11 @@ class TestIsingModel(unittest.TestCase):
         sample = from_shaped_iter(model.sample(2000), bool, [2000, n])[200:]
         self.assertAlmostEqual(abs(2 * np.mean(sample) - 1), 1, places=2)
 
+    def test_pairwise_fim_size(self):
+        n = np.random.choice(12) + 1
+        model = IsingModel(n)
+        f = model.fimfunction_pairwise(np.zeros(n))
+        self.assertEqual(len(f), (n ** 2 + n) / 2)
 
 if __name__ == '__main__':
     unittest.main()
