@@ -2,10 +2,10 @@ import numpy as np
 import multiprocessing as mp
 from ising_sampling import IsingModel
 
-numspin = 80
+numspin = 200
 n = 10000
 
-resdir = 'results_mf_j_1overN_h_minushalf/'
+resdir = 'results_200spin_mf_j_1overN_h_minushalf/'
 
 # Sherrington-Kirkpatrick Spin Glass
 # j0 = 1.  # standard deviation
@@ -24,7 +24,8 @@ np.save(resdir + "j.npy", j)
 
 
 def sample_e_with_beta(beta):
-    model = IsingModel(numspin, beta * h, beta * j)
+    model = IsingModel(numspin)
+    model.import_uniform01(beta * h, beta * j)
     sampled_states = model.sample(n)
 
     states = np.empty([n, numspin], dtype=bool)
@@ -41,4 +42,4 @@ def sample_e_with_beta(beta):
 
 
 P = mp.Pool()
-P.map(sample_e_with_beta, np.linspace(2., 6., 11))
+P.map(sample_e_with_beta, np.linspace(2., 12., 11))
