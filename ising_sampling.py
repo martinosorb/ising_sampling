@@ -8,7 +8,7 @@ class IsingModel():
     and connection matrix j."""
     def __init__(self, n):
         # size checks
-        if type(n) is not int or n <= 0:
+        if n <= 0:
             raise ValueError('n must be a positive integer')
         self.numspin = n
 
@@ -32,6 +32,30 @@ class IsingModel():
         self.j = j
         self.hamiltonian = self.__hamiltonian_mf
         self.energydiff = self.__energydiff_mf
+
+    def import_uniformPM(self, h, j):
+        if not np.size(h) == 1 and np.size(j) == 1:
+            raise ValueError('h and j must be scalars')
+        self.h = 2*(h - (self.numspin-1)*j)  # sure about -1?
+        self.j = 2*j
+        self.hamiltonian = self.__hamiltonian_mf
+        self.energydiff = self.__energydiff_mf
+
+# TODO it should also check the diagonal is empty
+    def import_isingPM(self, h, j):
+        h = np.asarray(h)
+        j = np.asarray(j)
+        n = self.numspin
+        if len(h) != n or j.shape != (n, n):
+            raise ValueError('Inconsistent h and j sizes')
+        if not np.all(j == j.T):
+            raise UserWarning('j is not a symmetric matrix')
+        h01 = 2*(h - np.sum(j, axis=1))
+        j01 = 2*j
+        self.hamiltonian = self.__hamiltonian_full
+        self.energydiff = self.__energydiff_full
+        self.h = h01
+        self.j = j01
 
     def import_rbm01(self, nvis, nhid, visbias, hidbias, vishid):
         visbias = np.asarray(visbias)
@@ -131,6 +155,7 @@ class IsingModel():
             p = mp.Pool(parallel)
             args = [(self.sample, beta, N, function) for beta in betas]
             results = p.map(self.__sample_function, args)
+            p.close()
         else:
             results = list(map(sample_function, betas))
         return results
