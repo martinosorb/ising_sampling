@@ -1,6 +1,6 @@
 import numpy as np
 import multiprocessing as mp
-
+from matplotlib.pyplot import gca, cm
 
 class IsingModel():
     """A class to sample from arbitrary Ising models.
@@ -40,6 +40,16 @@ class IsingModel():
         self.j = 2*j
         self.hamiltonian = self.__hamiltonian_mf
         self.energydiff = self.__energydiff_mf
+
+    def import_2d01(self, h, j, shape):
+        if np.size(h) != 1 or np.size(j) != 1:
+            raise ValueError("h and j must be scalars")
+        if shape[0]*shape[1] != self.numspin:
+            raise ValueError("The shape does not match the number of spins")
+        self.shape = shape
+        self.h, self.j = h, j
+        self.hamiltonian = self.__hamiltonian_notimplemented
+        self.energydiff = self.__energydiff_2d
 
 # TODO it should also check the diagonal is empty
     def import_isingPM(self, h, j):
@@ -99,6 +109,20 @@ class IsingModel():
         return - np.dot(self.h, state) - 0.5 * np.dot(state,
                                                       np.dot(self.j, state))
 
+    def __energydiff_2d(self, state, i):
+        a, b = self.shape
+        x = i % a
+        y = i // a
+        # to invert: i = y*a + x
+        u = ((y + 1) % b) * a + x
+        d = ((y - 1) % b) * a + x
+        r = y*a + (x + 1) % a
+        l = y*a + (x - 1) % a
+        return self.h + self.j * (state[u] + state[d] + state[l] + state[r])
+
+    def __hamiltonian_notimplemented(self, state):
+        raise NotImplementedError()
+
     # def __energydiff_rbm(self, state, i):
     #     pass
 
@@ -126,23 +150,26 @@ class IsingModel():
         s = [fimfunction(x) for x in sample]
         return np.cov(s, rowvar=0)
 
+    def random_state(self):
+        self.spins = np.random.choice([True, False], size=self.numspin)
+
     def sample(self, n, beta=1):
         """Extract n states by Gibbs sampling of the Ising network."""
         # input check
         if n <= 0 or not type(n) == int:
             raise ValueError('n must be a positive integer')
         # initial state
-        spins = np.random.choice([True, False], size=self.numspin)
+        self.random_state()
         # iterative loop
         for itern in range(n):
             for spin in range(self.numspin):
-                delta_e = self.energydiff(spins, spin) * beta
+                delta_e = self.energydiff(self.spins, spin) * beta
                 p = np.exp(delta_e)
-                spins[spin] = False
+                self.spins[spin] = False
                 p /= 1 + p
                 if np.random.random() < p:
-                    spins[spin] = True
-            yield spins
+                    self.spins[spin] = True
+            yield self.spins
 
     def __sample_function(argtuple):
         (samplefunc, beta, N, function) = argtuple
@@ -172,3 +199,11 @@ class IsingModel():
             j = self.j[:num, :num]
             model.import_ising01(h, j)
         return model
+
+    def show(self, ax=None):
+        if ax is None:
+            ax = gca()
+        ax.pcolormesh(self.spins.reshape(self.shape), cmap=cm.gray)
+        ax.set_aspect("equal")
+        ax.set_xticks([])
+        ax.set_yticks([])
