@@ -1,11 +1,10 @@
 import numpy as np
-import multiprocessing as mp
 from matplotlib.pyplot import gca, cm
+
 
 class IsingModel():
     """A class to sample from arbitrary Ising models.
-    The constructor takes the number of spins n, local fields h
-    and connection matrix j."""
+    The constructor takes the number of spins n."""
     def __init__(self, n):
         # size checks
         if n <= 0:
@@ -118,6 +117,7 @@ class IsingModel():
         d = ((y - 1) % b) * a + x
         r = y*a + (x + 1) % a
         l = y*a + (x - 1) % a
+        print(u, d, l, r, "\n")
         return self.h + self.j * (state[u] + state[d] + state[l] + state[r])
 
     def __hamiltonian_notimplemented(self, state):
@@ -176,16 +176,16 @@ class IsingModel():
         sample = samplefunc(N, beta=beta)
         return [function(x) for x in sample]
 
-    def sample_function_at_betas(self, betas, N, function, parallel=1):
-        raise ImportError('Not implemented')
-        if parallel > 1:
-            p = mp.Pool(parallel)
-            args = [(self.sample, beta, N, function) for beta in betas]
-            results = p.map(self.__sample_function, args)
-            p.close()
-        else:
-            results = list(map(sample_function, betas))
-        return results
+    # def sample_function_at_betas(self, betas, N, function, parallel=1):
+    #     raise ImportError('Not implemented')
+    #     if parallel > 1:
+    #         p = mp.Pool(parallel)
+    #         args = [(self.sample, beta, N, function) for beta in betas]
+    #         results = p.map(self.__sample_function, args)
+    #         p.close()
+    #     else:
+    #         results = list(map(sample_function, betas))
+    #     return results
 
     def submodel(self, num):
         if num > self.numspin:

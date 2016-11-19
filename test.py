@@ -169,6 +169,32 @@ class TestIsingModel(unittest.TestCase):
 
         self.assertAlmostEqual(p, model.energydiff(spins, spin))
 
+    def test_diff_2d(self):
+        h = 0  # np.random.normal()
+        j = np.random.normal()
+
+        def get_energy(spins, h, j):
+            return -np.sum(j*spins*(
+                    np.roll(spins, 1, axis=0) +
+                    np.roll(spins, -1, axis=0) +
+                    np.roll(spins, 1, axis=1) +
+                    np.roll(spins, -1, axis=1))
+                    ) - h * np.sum(spins)
+
+        shape = (3, 3)
+        model = IsingModel(np.product(shape))
+        model.import_2d01(h, j, shape)
+        model.random_state()
+        # model.spins = np.repeat([True], np.product(shape))
+        for i in range(model.numspin):
+            print(model.spins[i])
+            state = np.copy(model.spins)
+            state[i] = True
+            e1 = get_energy(state.reshape(shape), h, j)
+            state[i] = False
+            e0 = get_energy(state.reshape(shape), h, j)
+            self.assertAlmostEqual(e0 - e1, model.energydiff(model.spins, i))
+
     def test_rbm_hamiltonian(self):
         nvis, nhid = 10, 5
         vishid = np.random.normal(size=(nvis, nhid))
@@ -188,8 +214,8 @@ class TestIsingModel(unittest.TestCase):
         # disordered phase, should be .5 on average
         beta = 1
         model.import_uniform01(beta * h, beta * j)
-        sample = from_shaped_iter(model.sample(15000), bool, [15000, n])[200:]
-        self.assertAlmostEqual(np.mean(sample), .5, places=2)
+        sample = from_shaped_iter(model.sample(5000), bool, [5000, n])[200:]
+        self.assertAlmostEqual(np.mean(sample), .5, places=1)
 
         # ordered phase, sol can be 0 or 1
         beta = 16
