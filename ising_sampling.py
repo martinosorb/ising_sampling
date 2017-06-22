@@ -110,6 +110,7 @@ class IsingModel():
                                                       np.dot(self.j, state))
 
     def __energydiff_2d(self, state, i):
+        raise NotImplementedError()
         a, b = self.shape
         x = i % a
         y = i // a
