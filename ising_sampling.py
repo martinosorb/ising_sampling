@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 from matplotlib.pyplot import gca, cm
 
@@ -35,8 +36,8 @@ class IsingModel():
     def import_uniformPM(self, h, j):
         if not np.size(h) == 1 and np.size(j) == 1:
             raise ValueError('h and j must be scalars')
-        self.h = 2*(h - (self.numspin-1)*j)  # sure about -1?
-        self.j = 2*j
+        self.h = h - 2*(self.numspin-1)*j
+        self.j = 4*j
         self.hamiltonian = self.__hamiltonian_mf
         self.energydiff = self.__energydiff_mf
 

@@ -208,18 +208,36 @@ class TestIsingModel(unittest.TestCase):
     def test_physical(self):
         n = 35
         h = -0.5
-        j = 1 / n
+        j = 1. / n
         model = IsingModel(n)
 
         # disordered phase, should be .5 on average
-        beta = 1
+        beta = 1.
         model.import_uniform01(beta * h, beta * j)
         sample = from_shaped_iter(model.sample(5000), bool, [5000, n])[200:]
         self.assertAlmostEqual(np.mean(sample), .5, places=1)
 
         # ordered phase, sol can be 0 or 1
-        beta = 16
+        beta = 16.
         model.import_uniform01(beta * h, beta * j)
+        sample = from_shaped_iter(model.sample(2000), bool, [2000, n])[200:]
+        self.assertAlmostEqual(abs(2 * np.mean(sample) - 1), 1, places=2)
+
+    def test_physicalPM(self):
+        n = 35
+        h = 0.0
+        j = 1. / n  # critical point should be at 2.
+        model = IsingModel(n)
+
+        # disordered phase, should be .5 on average
+        beta = 1.
+        model.import_uniformPM(beta * h, beta * j)
+        sample = from_shaped_iter(model.sample(5000), bool, [5000, n])[200:]
+        self.assertAlmostEqual(np.mean(sample), .5, places=1)
+
+        # ordered phase, sol can be 0 or 1
+        beta = 4.
+        model.import_uniformPM(beta * h, beta * j)
         sample = from_shaped_iter(model.sample(2000), bool, [2000, n])[200:]
         self.assertAlmostEqual(abs(2 * np.mean(sample) - 1), 1, places=2)
 
